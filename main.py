@@ -1,32 +1,19 @@
-import requests
+# Import required modules
+from nutritionix import Nutritionix
+from sheet import Sheety
 
+# Ask the user for the exercises they did
+user_query = input("Which exercises have you performed today: ")
 
-APP_ID = "debad296"
-API_KEY = "4a1e979e8258bf9dc351a839964f8068"
+# Create the Nutritionix Object & post the data
+nx_object = Nutritionix(query=user_query, gender="male", weight_kg=71, height_cm=179, age=23)
+nx_post_data = nx_object.post_response()
 
-GENDER = "Male"
-WEIGHT_KG = "71"
-HEIGHT_CM = "179"
-AGE = "23"
-
-endpoint = "https://trackapi.nutritionix.com/v2/natural/exercise"
-
-exercise_input = input("What exercise did you do?")
-
-headers = {
-    "x-app-id": APP_ID,
-    "x-app-key": API_KEY,
-}
-
-parameters = {"query": exercise_input,
-              "gender": GENDER,
-              "weight_kg": WEIGHT_KG,
-              "height_cm": HEIGHT_CM,
-              "age": AGE
-}
-
-response = requests.post(endpoint, json=parameters, headers=headers)
-result = response.json()
-print(result)
-
-
+# loop through each exercise
+for key in range(0, len(nx_post_data.json()["exercises"])):
+    # Create Sheety object and post
+    sheety_object = Sheety(exercise=nx_post_data.json()["exercises"][key]["name"].title(),
+                           duration=nx_post_data.json()["exercises"][key]["duration_min"],
+                           calories=nx_post_data.json()["exercises"][key]["nf_calories"])
+    sheety_post_response = sheety_object.post_response()
+    print(sheety_post_response.text)
